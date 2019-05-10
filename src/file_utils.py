@@ -92,13 +92,8 @@ def open_writable_file(path, mode="w+"):
     return open(path, mode, encoding='utf-8')
 
 
-def save_images_with(images, output_root_path, category, file_name, is_ndarray=False):
-    if len(images) == 0:
-        return
-
-    for i, image in enumerate(images):
-        output_file_name = "{}_{}_{}.jpg".format(category, file_name, i)
-        if is_ndarray:
-            cv2.imwrite(os.path.join(output_root_path, output_file_name), image)
-        else:
-            image.save(os.path.join(output_root_path, output_file_name))
+def save_image_with(image, output_root_path, file_name, is_ndarray=False):
+    if is_ndarray:
+        cv2.imwrite(os.path.join(output_root_path, file_name), image)
+    else:
+        image.save(os.path.join(output_root_path, file_name))
