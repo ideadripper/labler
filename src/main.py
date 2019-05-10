@@ -29,7 +29,8 @@ def split_images(files, output_dir_path, category):
 
     for image_path in files:
         _, file_name = os.path.split(image_path)
-        if did_split(get_output_filename(category, file_name, 0), category_normal_path):
+        if did_split(get_output_filename(category, file_name, 0), category_normal_path) or did_split(
+                get_output_filename(category, file_name, 0), category_defect_path):
             continue
 
         image = cv2.imread(image_path)
@@ -43,19 +44,19 @@ def split_images(files, output_dir_path, category):
 
         normal_images, defect_images = grid_viewer.split_images_by_marks()
 
-        for i, image in enumerate(normal_images):
+        for norm_i, image in enumerate(normal_images):
             futil.save_image_with(
                 image,
                 output_root_path=category_normal_path,
-                file_name=get_output_filename(category, file_name, i),
+                file_name=get_output_filename(category, file_name, norm_i),
                 is_ndarray=True
             )
 
-        for j, image in enumerate(defect_images):
+        for defect_i, image in enumerate(defect_images):
             futil.save_image_with(
                 image,
                 output_root_path=category_normal_path,
-                file_name=get_output_filename(category, file_name, i),
+                file_name=get_output_filename(category, file_name, defect_i),
                 is_ndarray=True
             )
 
@@ -102,7 +103,7 @@ if __name__ == "__main__":
     output_root = "./outputs"
 
     for i in range(10):
-        augment_categories(sub_dirs, output_root, begin_file_index=i)
+        augment_categories(sub_dirs, output_root, begin_file_index=i*10)
         key = input("작업을 이어서 하시겠습니까 ? (이어하기 : y, 그만하기 : 그외 아무거나)")
         if key is not 'y':
             break
