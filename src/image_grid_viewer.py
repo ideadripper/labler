@@ -34,7 +34,7 @@ class GridMap:
 
 
 class ImageViewer:
-    GRID_BOX_SIZE = (108, 214)
+    GRID_BOX_SIZE = (128, 256)
     MARK_CODE_NORMAL = 0
     MARK_CODE_DEFECT = 1
     MARK_CODE_UNUSED = 2
