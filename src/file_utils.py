@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 
+
 def get_sub_dirs(root_dir, max_depth=0):
     return get_childs(root_dir, is_dir=True, max_depth=max_depth)
 

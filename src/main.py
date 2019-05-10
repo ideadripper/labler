@@ -3,10 +3,10 @@ import os
 import cv2
 import json
 from src.image_grid_viewer import ImageViewer as GridViewer
+from src.logger import ProcessLogger as Logger
 
 
 def did_split(file_name, output_path):
-    print("check path : {}".format(os.path.join(output_path, file_name)))
     return os.path.exists(os.path.join(output_path, file_name))
 
 
@@ -15,6 +15,7 @@ def get_output_filename(category, base_name, index):
 
 
 def split_images(files, output_dir_path, category):
+    logger = Logger()
     defect_dir_path = "{}/defect".format(output_dir_path)
     normal_dir_path = "{}/normal".format(output_dir_path)
 
@@ -33,16 +34,21 @@ def split_images(files, output_dir_path, category):
                 get_output_filename(category, file_name, 0), category_defect_path):
             continue
 
+        if logger.exist_name_in_log(file_name):
+            continue
+
         image = cv2.imread(image_path)
         return_key_code = grid_viewer.show(image, rgb_image=False)
 
         if return_key_code is ord('1'):
+            logger.append_processed_image(file_name)
             print("Skip : {}".format(file_name))
             continue
         elif return_key_code is ord('0'):
             break
 
         normal_images, defect_images = grid_viewer.split_images_by_marks()
+        logger.append_processed_image(file_name)
 
         for norm_i, image in enumerate(normal_images):
             futil.save_image_with(
@@ -55,7 +61,7 @@ def split_images(files, output_dir_path, category):
         for defect_i, image in enumerate(defect_images):
             futil.save_image_with(
                 image,
-                output_root_path=category_normal_path,
+                output_root_path=category_defect_path,
                 file_name=get_output_filename(category, file_name, defect_i),
                 is_ndarray=True
             )
