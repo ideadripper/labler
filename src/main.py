@@ -11,7 +11,7 @@ def did_split(file_name, output_path):
 
 
 def get_output_filename(category, base_name, index):
-    return "{}_{}_{}.jpg".format(category, base_name, i)
+    return "{}_{}_{}.jpg".format(category, base_name, index)
 
 
 def split_images(files, output_dir_path, category):
@@ -66,7 +66,10 @@ def split_images(files, output_dir_path, category):
                 is_ndarray=True
             )
 
-        json_datas.append({"file": file_name, "data": grid_viewer.get_summary()})
+        summary = {"file": file_name, "data": grid_viewer.get_summary()}
+        with open(os.path.join(output_dir_path, "summary_{}.json".format(category)), mode='a') as file:
+            file.write(json.dumps(summary))
+            file.write("\n")
 
     return json_datas
 
@@ -88,11 +91,7 @@ def augment_categories(sub_dirs, output_dir_path, begin_file_index=0):
             print("\n=== {} ===\n".format(category))
             summaries = split_images(files, output_dir_path, category)
             print(summaries)
-            summary_file_name = "summary_{}_{}.json".format(category, begin_file_index)
-            with open(os.path.join(output_dir_path, summary_file_name), mode='w') as file:
-                for summary in summaries:
-                    file.write(json.dumps(summary))
-                    file.write("\n")
+            "summary_{}_{}.json".format(category, begin_file_index)
 
             # print("\n=== END {} === {}\n".format(category, count))
 
@@ -110,6 +109,6 @@ if __name__ == "__main__":
 
     for i in range(10):
         augment_categories(sub_dirs, output_root, begin_file_index=i*10)
-        key = input("작업을 이어서 하시겠습니까 ? (이어하기 : y, 그만하기 : 그외 아무거나)")
-        if key is not 'y':
-            break
+        # key = input("작업을 이어서 하시겠습니까 ? (이어하기 : y, 그만하기 : 그외 아무거나)")
+        # if key is not 'y':
+        #     break

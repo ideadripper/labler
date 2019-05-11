@@ -12,7 +12,6 @@ class ProcessLogger:
 
         self.log_path = path
         self.processed_names = self._load_processed_log()
-        print(self.processed_names)
 
     def _load_processed_log(self):
         processed_log_name = os.path.join(self.log_path, ProcessLogger.PROCESSED_IMAGE_LOG)
