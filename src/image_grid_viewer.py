@@ -9,6 +9,37 @@ EVENT_LBUTTONDBLCLK = cv2.EVENT_LBUTTONDBLCLK
 EVENT_MOUSEMOVE = cv2.EVENT_MOUSEMOVE
 
 
+class SelectMark:
+    def __init__(self, index, code):
+        self._index = index
+        self._code = code
+
+    @property
+    def index(self):
+        return self._index
+
+    @property
+    def code(self):
+        return self._code
+
+    def set_code(self, new_code):
+        self._code = new_code
+
+    def __getitem__(self, item):
+        if item == 'code':
+            return self._code
+        elif item == 'index':
+            return self._index
+        else:
+            raise Exception('not found item {}'.format(item))
+
+    def to_json(self):
+        return json.dumps({'code': self.code, 'index': self.index})
+
+    def __str__(self):
+        return self.to_json()
+
+
 class GridMap:
     def __init__(self, horizontal_number, vertical_number, total_width, total_height):
         self._horizontal_number = horizontal_number
@@ -31,6 +62,28 @@ class GridMap:
     @property
     def total_height(self):
         return self._total_height
+
+
+class KeyInputFlag:
+    def __init__(self, key, error_message=None):
+        self._key = key
+        self.message = error_message
+
+    @property
+    def input_key(self):
+        return self._key
+
+    @property
+    def skip(self):
+        return self._key == ord('1')
+
+    @property
+    def stop(self):
+        return self._key == ord('0')
+
+    @property
+    def error(self):
+        return self._key == -1, self.message
 
 
 class ImageViewer:
@@ -110,10 +163,7 @@ class ImageViewer:
         h_i = click_position[0] // cls.GRID_BOX_SIZE[0]
         v_i = click_position[1] // cls.GRID_BOX_SIZE[1]
 
-        mark = {
-            "code": cls.MARK_CODE_DEFECT,
-            "index": ((v_i * grid_map.horizontal_number) + h_i)
-        }
+        mark = SelectMark(index=((v_i * grid_map.horizontal_number) + h_i), code=cls.MARK_CODE_DEFECT)
 
         return mark
 
@@ -122,11 +172,11 @@ class ImageViewer:
         for mark in self.selected_marks:
             if mark['index'] == new_mark['index']:
                 if mark['code'] == ImageViewer.MARK_CODE_DEFECT:
-                    mark['code'] = ImageViewer.MARK_CODE_UNUSED
+                    mark.set_code(ImageViewer.MARK_CODE_UNUSED)
                 elif mark['code'] == ImageViewer.MARK_CODE_UNUSED:
-                    mark['code'] = ImageViewer.MARK_CODE_NORMAL
+                    mark.set_code(ImageViewer.MARK_CODE_NORMAL)
                 else:
-                    mark['code'] = ImageViewer.MARK_CODE_DEFECT
+                    mark.set_code(ImageViewer.MARK_CODE_DEFECT)
 
                 is_updated = True
 
@@ -146,10 +196,12 @@ class ImageViewer:
 
         cv2.imshow(self.name, output_image)
 
-    def show(self, image, rgb_image=True):
+    def select_mark(self, image, rgb_image=True):
         cv2.setMouseCallback(self.name, self._mouse_click)
         self.selected_marks.clear()
         self.current_image = image
+
+        error_message = None
 
         if rgb_image:
             self.current_image = cv2.cvtColor(self.current_image, cv2.COLOR_RGB2BGR)
@@ -158,51 +210,24 @@ class ImageViewer:
 
         try:
             print("다음 : Space, 안하고 넘기기 : 1, 다음 카테고리 : 0, ")
-            return cv2.waitKey(0)
+            key = cv2.waitKey(0)
 
         except Exception as e:
+            error_message = e.message
             print(e.message)
             print(e.__class__.__name__)
             traceback.print_exc(e)
 
-        return -1
-
-    def split_images_by_marks(self):
-        width, height, _ = np.array(self.current_image).shape
-        grid_map = ImageViewer.calculate_grid_map(width, height)
-        normals = []
-        defects = []
-
-        for h_i in range(0, grid_map.horizontal_number):
-            for v_i in range(0, grid_map.vertical_number):
-                index = v_i * grid_map.horizontal_number + h_i
-                code = -1
-                for mark in self.selected_marks:
-                    if mark['index'] == index:
-                        code = mark['code']
-
-                if code == ImageViewer.MARK_CODE_UNUSED:
-                    continue
-
-                x_point = h_i * ImageViewer.GRID_BOX_SIZE[0]
-                y_point = v_i * ImageViewer.GRID_BOX_SIZE[1]
-
-                right = x_point + ImageViewer.GRID_BOX_SIZE[0]
-                bottom = y_point + ImageViewer.GRID_BOX_SIZE[1]
-
-                crop_image = self.current_image[y_point:bottom, x_point:right, :]
-
-                if code == -1:
-                    normals.append(crop_image)
-                elif code == ImageViewer.MARK_CODE_DEFECT:
-                    defects.append(crop_image)
-
-        return normals, defects
+        return KeyInputFlag(key, error_message), self.selected_marks
 
     def save_summary(self, file_name, path):
         with open(os.path.join(path, file_name)) as file:
             json.dumps(self.selected_marks, file)
 
     def get_summary(self):
-        return json.dumps(self.selected_marks)
+        jsons = []
+        for mark in self.selected_marks:
+            jsons.append({"index": mark.index, "code": mark.code})
+
+        return json.dumps(jsons)
 

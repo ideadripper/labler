@@ -20,7 +20,6 @@ class ProcessLogger:
 
         names = []
         with open(processed_log_name, mode='r') as log_file:
-            print(log_file)
             for line in log_file:
                 names.append(line.replace("\n", ""))
 
