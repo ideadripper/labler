@@ -27,7 +27,7 @@ matplotlib==3.0.2
 modbus-tk==31.8017.5770
 networkx==2.2
 numpy==1.16.1
-opencv-python==4.0.0.21
+opencv-python==4.1.1.26
 pandas==0.23.4
 parso==0.3.4
 peewee==3.8.2
