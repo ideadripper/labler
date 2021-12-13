@@ -21,7 +21,7 @@ ipython-genutils==0.2.0
 jedi==0.13.2
 jmespath==0.9.3
 kiwisolver==1.0.1
-lxml==4.2.4
+lxml==4.6.5
 macholib==1.11
 matplotlib==3.0.2
 modbus-tk==31.8017.5770
